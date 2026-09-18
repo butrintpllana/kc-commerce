@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
   const { user, isAdmin, logout } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <nav>
       <Link to="/">Home</Link>{' | '}
-      <Link to="/cart">Cart</Link>{' | '}
+      <Link to="/cart">Cart ({itemCount})</Link>{' | '}
       {user ? (
         <>
           <Link to="/orders">Orders</Link>{' | '}
