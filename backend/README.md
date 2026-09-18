@@ -57,3 +57,30 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+## Key Design Decisions
+
+- **Admin accounts are seeded, not self-registered.** The public `/register` 
+  endpoint always creates `role: customer` regardless of what's submitted, 
+  to prevent privilege escalation. The one admin account is created via 
+  `DatabaseSeeder`. This satisfies "administrator registration and login" 
+  as "an admin account exists and can log in" through the same `/login` 
+  endpoint as any user. An admin-gated `POST /admin/users` endpoint would 
+  be the correct way to let admins create more admins post-deployment, 
+  but was out of scope for this challenge.
+
+- **Cart is client-side only.** No `carts`/`cart_items` tables — the cart 
+  lives in React state and is submitted as a single payload to `POST /orders`. 
+  This keeps the schema simpler for a challenge of this scope; a production 
+  version would likely persist carts server-side for logged-in users.
+
+- **Order prices are server-computed, never trusted from the client.** 
+  `unit_price` is looked up from the current `products.price` at order 
+  creation time and snapshotted onto `order_items`, so historical orders 
+  remain accurate even if a product's price later changes.
+
+- **Products with existing order history are soft-disabled, not deleted.** 
+  Deleting a product referenced by past `order_items` would corrupt order 
+  history, so `DELETE /products/{id}` sets `is_active = false` instead of 
+  removing the row when order items exist.
