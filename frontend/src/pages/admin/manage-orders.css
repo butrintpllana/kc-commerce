@@ -1,0 +1,48 @@
+.order-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.order-filter__tab {
+  padding: 6px 14px;
+  border: 1px solid #d0d0d5;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.order-filter__tab.is-active {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+.admin-orders-row {
+  cursor: pointer;
+}
+
+.admin-orders-row:hover {
+  background: #faf9fc;
+}
+
+.admin-order-items {
+  background: #fafafa;
+}
+
+.admin-order-items td {
+  padding: 8px 10px 14px;
+}
+
+.admin-order-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.status-select {
+  padding: 4px 6px;
+  font-size: 13px;
+}

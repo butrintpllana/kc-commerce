@@ -1,0 +1,29 @@
+.order-status-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.order-status-badge--pending {
+  background: #fff4e5;
+  color: #b25e00;
+}
+
+.order-status-badge--processing {
+  background: #e5f0ff;
+  color: #1155cc;
+}
+
+.order-status-badge--completed {
+  background: #edf9ee;
+  color: #1a7f37;
+}
+
+.order-status-badge--cancelled {
+  background: #fdecea;
+  color: #b42318;
+}

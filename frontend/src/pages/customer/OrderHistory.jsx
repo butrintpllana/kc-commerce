@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchOrders } from '../../api/orders';
+import StatusBadge from '../../components/order/StatusBadge';
 import './order-history.css';
-
-function StatusBadge({ status }) {
-  return <span className={`order-status-badge order-status-badge--${status}`}>{status}</span>;
-}
 
 function OrderCard({ order, expanded, onToggle }) {
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);

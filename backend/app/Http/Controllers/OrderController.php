@@ -17,7 +17,7 @@ class OrderController extends Controller
     {
         $user = $request->user();
 
-        $query = Order::with('items.product')->latest();
+        $query = Order::with(['items.product', 'user'])->latest();
 
         if ($user->isAdmin()) {
             if ($request->filled('status')) {
