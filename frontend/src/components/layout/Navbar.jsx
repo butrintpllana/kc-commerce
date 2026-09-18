@@ -12,7 +12,7 @@ export default function Navbar() {
       <Link to="/cart">Cart ({itemCount})</Link>{' | '}
       {user ? (
         <>
-          <Link to="/orders">Orders</Link>{' | '}
+          <Link to="/orders">My Orders</Link>{' | '}
           {isAdmin && (
             <>
               <Link to="/admin">Admin</Link>{' | '}
