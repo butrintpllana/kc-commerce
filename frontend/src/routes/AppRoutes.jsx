@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { AdminRoute, ProtectedRoute } from '../auth/ProtectedRoute';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
@@ -7,7 +7,10 @@ import ProductDetail from '../pages/customer/ProductDetail';
 import Cart from '../pages/customer/Cart';
 import Checkout from '../pages/customer/Checkout';
 import OrderHistory from '../pages/customer/OrderHistory';
-import Dashboard from '../pages/admin/Dashboard';
+import AdminLayout from '../components/admin/AdminLayout';
+import ManageProducts from '../pages/admin/ManageProducts';
+import ManageCategories from '../pages/admin/ManageCategories';
+import ManageOrders from '../pages/admin/ManageOrders';
 
 export default function AppRoutes() {
   return (
@@ -24,7 +27,12 @@ export default function AppRoutes() {
       </Route>
 
       <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/products" replace />} />
+          <Route path="products" element={<ManageProducts />} />
+          <Route path="categories" element={<ManageCategories />} />
+          <Route path="orders" element={<ManageOrders />} />
+        </Route>
       </Route>
     </Routes>
   );
