@@ -1,0 +1,13 @@
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.page-loader__label {
+  font-size: var(--text-sm);
+}

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProduct } from '../../api/products';
 import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
+import PageLoader from '../../components/common/PageLoader';
 import './product-detail.css';
 
 const PLACEHOLDER_IMAGE =
@@ -13,14 +15,14 @@ const PLACEHOLDER_IMAGE =
 export default function ProductDetail() {
   const { id } = useParams();
   const { addItem } = useCart();
+  const { showToast } = useToast();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    setAdded(false);
+    setQuantity(1);
 
     fetchProduct(id)
       .then((response) => setProduct(response.data.data))
@@ -30,16 +32,24 @@ export default function ProductDetail() {
 
   function handleAddToCart() {
     addItem(product, quantity);
-    setAdded(true);
+    showToast(`${quantity} × ${product.name} added to cart.`, 'success');
+  }
+
+  function decrement() {
+    setQuantity((q) => Math.max(1, q - 1));
+  }
+
+  function increment() {
+    setQuantity((q) => q + 1);
   }
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <PageLoader label="Loading product..." />;
   }
 
   if (!product) {
     return (
-      <div>
+      <div className="product-not-found">
         <p>Product not found.</p>
         <Link to="/">Back to menu</Link>
       </div>
@@ -48,32 +58,52 @@ export default function ProductDetail() {
 
   return (
     <div className="product-detail">
-      <img
-        src={product.image_url || PLACEHOLDER_IMAGE}
-        alt={product.name}
-        className="product-detail__image"
-      />
+      <div className="product-detail__image-wrap">
+        <img
+          src={product.image_url || PLACEHOLDER_IMAGE}
+          alt={product.name}
+          className="product-detail__image"
+        />
+      </div>
       <div className="product-detail__info">
         {product.category?.name && <span className="badge">{product.category.name}</span>}
-        <h1>{product.name}</h1>
+        <h1 className="product-detail__name">{product.name}</h1>
         <p className="product-detail__price">${Number(product.price).toFixed(2)}</p>
         <p className="product-detail__description">{product.description}</p>
 
         <div className="product-detail__quantity">
-          <label htmlFor="quantity">Quantity</label>
-          <input
-            id="quantity"
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-          />
+          <span className="product-detail__quantity-label">Quantity</span>
+          <div className="quantity-stepper">
+            <button
+              type="button"
+              className="quantity-stepper__btn"
+              onClick={decrement}
+              aria-label="Decrease quantity"
+            >
+              −
+            </button>
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+              className="quantity-stepper__input"
+              aria-label="Quantity"
+            />
+            <button
+              type="button"
+              className="quantity-stepper__btn"
+              onClick={increment}
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
+          </div>
         </div>
 
-        <button className="btn btn--primary" onClick={handleAddToCart}>
-          Add to Cart
+        <button className="btn btn--primary product-detail__add" onClick={handleAddToCart}>
+          Add to Cart — ${(Number(product.price) * quantity).toFixed(2)}
         </button>
-        {added && <p className="product-detail__added">Added to cart!</p>}
       </div>
     </div>
   );

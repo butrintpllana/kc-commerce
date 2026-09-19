@@ -1,20 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createCategory,
   deleteCategory,
   fetchCategories,
   updateCategory,
 } from '../../api/categories';
+import { useToast } from '../../context/ToastContext';
+import Spinner from '../../components/common/Spinner';
+import PageLoader from '../../components/common/PageLoader';
+import SlideOver from '../../components/common/SlideOver';
+import { PencilIcon, PlusIcon, TrashIcon } from '../../components/admin/icons';
+import '../../components/admin/admin-form.css';
 
 const emptyForm = { name: '' };
 
 export default function ManageCategories() {
+  const { showToast } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
-  const [toast, setToast] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const submitInFlight = useRef(false);
+  const deleteInFlight = useRef(null);
 
   function load() {
     setLoading(true);
@@ -28,13 +39,22 @@ export default function ManageCategories() {
     load();
   }, []);
 
+  function startCreate() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setErrors({});
+    setPanelOpen(true);
+  }
+
   function startEdit(category) {
     setEditingId(category.id);
     setForm({ name: category.name });
     setErrors({});
+    setPanelOpen(true);
   }
 
-  function cancelEdit() {
+  function closePanel() {
+    setPanelOpen(false);
     setEditingId(null);
     setForm(emptyForm);
     setErrors({});
@@ -42,100 +62,146 @@ export default function ManageCategories() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (submitInFlight.current) return;
+    submitInFlight.current = true;
+
     setErrors({});
+    setSubmitting(true);
 
     try {
       if (editingId) {
         await updateCategory(editingId, form);
-        setToast({ type: 'success', message: 'Category updated.' });
+        showToast('Category updated.', 'success');
       } else {
         await createCategory(form);
-        setToast({ type: 'success', message: 'Category created.' });
+        showToast('Category created.', 'success');
       }
 
-      cancelEdit();
+      closePanel();
       load();
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
       } else {
-        setToast({ type: 'error', message: err.response?.data?.message || 'Something went wrong.' });
+        showToast(err.response?.data?.message || 'Something went wrong.', 'error');
       }
+    } finally {
+      submitInFlight.current = false;
+      setSubmitting(false);
     }
   }
 
   async function handleDelete(category) {
-    setToast(null);
+    if (deleteInFlight.current) return;
+    deleteInFlight.current = category.id;
+
+    setDeletingId(category.id);
 
     try {
       await deleteCategory(category.id);
-      setToast({ type: 'success', message: `"${category.name}" deleted.` });
+      showToast(`"${category.name}" deleted.`, 'success');
       load();
     } catch (err) {
-      setToast({
-        type: 'error',
-        message: err.response?.data?.message || 'Could not delete this category.',
-      });
+      showToast(err.response?.data?.message || 'Could not delete this category.', 'error');
+    } finally {
+      deleteInFlight.current = null;
+      setDeletingId(null);
     }
   }
 
   return (
     <div>
-      <h1>Categories</h1>
-
-      {toast && <div className={`toast toast--${toast.type}`}>{toast.message}</div>}
-
-      <form className="admin-form" onSubmit={handleSubmit}>
-        <h3>{editingId ? 'Edit Category' : 'Add Category'}</h3>
-        <label>
-          Name
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm({ name: e.target.value })}
-            required
-          />
-          {errors.name && <p className="field-error">{errors.name[0]}</p>}
-        </label>
-        <div className="admin-form__actions">
-          <button type="submit" className="btn btn--primary">
-            {editingId ? 'Save Changes' : 'Add Category'}
-          </button>
-          {editingId && (
-            <button type="button" className="btn btn--secondary" onClick={cancelEdit}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+      <div className="admin-page__header">
+        <h1>Categories</h1>
+        <button className="btn btn--primary" onClick={startCreate}>
+          <PlusIcon /> Add Category
+        </button>
+      </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <PageLoader label="Loading categories..." />
       ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr key={category.id}>
-                <td>{category.name}</td>
-                <td>
-                  <button className="btn btn--secondary" onClick={() => startEdit(category)}>
-                    Edit
-                  </button>{' '}
-                  <button className="btn btn--danger" onClick={() => handleDelete(category)}>
-                    Delete
-                  </button>
-                </td>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th style={{ width: 120 }}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {categories.length === 0 ? (
+                <tr className="admin-empty-row">
+                  <td colSpan={2}>No categories yet.</td>
+                </tr>
+              ) : (
+                categories.map((category) => (
+                  <tr key={category.id}>
+                    <td>{category.name}</td>
+                    <td>
+                      <div className="admin-table__actions">
+                        <button
+                          className="icon-btn"
+                          onClick={() => startEdit(category)}
+                          title="Edit category"
+                          aria-label="Edit category"
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button
+                          className="icon-btn icon-btn--danger"
+                          onClick={() => handleDelete(category)}
+                          disabled={deletingId === category.id}
+                          title="Delete category"
+                          aria-label="Delete category"
+                        >
+                          {deletingId === category.id ? <Spinner size="sm" /> : <TrashIcon />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      <SlideOver
+        open={panelOpen}
+        onClose={closePanel}
+        title={editingId ? 'Edit Category' : 'Add Category'}
+      >
+        <form onSubmit={handleSubmit}>
+          <label className="admin-field">
+            <span className="admin-field__label">Name</span>
+            <input
+              type="text"
+              className={`admin-field__input ${errors.name ? 'admin-field__input--invalid' : ''}`}
+              value={form.name}
+              onChange={(e) => setForm({ name: e.target.value })}
+              required
+            />
+            {errors.name && <p className="admin-field__error">{errors.name[0]}</p>}
+          </label>
+
+          <div className="admin-form-actions">
+            <button type="submit" className="btn btn--primary" disabled={submitting}>
+              {submitting && <Spinner size="sm" />}
+              {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Add Category'}
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={closePanel}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </SlideOver>
     </div>
   );
 }

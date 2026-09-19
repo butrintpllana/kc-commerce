@@ -1,0 +1,77 @@
+.admin-field {
+  display: block;
+  margin-bottom: var(--space-4);
+}
+
+.admin-field__label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-heading);
+  margin-bottom: var(--space-1);
+}
+
+.admin-field__input {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-base);
+  font-family: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-field__input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.admin-field__input--invalid {
+  border-color: var(--color-danger-500);
+}
+
+.admin-field__input--invalid:focus {
+  border-color: var(--color-danger-500);
+  box-shadow: 0 0 0 3px var(--color-danger-50);
+}
+
+.admin-field__error {
+  color: var(--color-danger-500);
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+}
+
+.admin-field__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-heading);
+  cursor: pointer;
+}
+
+.admin-field__checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.admin-form-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-form-actions .btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}

@@ -13,6 +13,7 @@ class OrderItemResource extends JsonResource
             'id' => $this->id,
             'product_id' => $this->product_id,
             'product_name' => $this->product?->name,
+            'product_image_url' => $this->product?->image_url,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
             'subtotal' => round($this->quantity * $this->unit_price, 2),
